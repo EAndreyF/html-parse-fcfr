@@ -1,0 +1,11 @@
+{
+  "name": "html-parse-fcfr",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EAndreyF/html-parse-fcfr.git"
+  },
+  "dependencies": {
+    "jsdom": "^16.2.2"
+  }
+}
