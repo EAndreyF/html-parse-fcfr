@@ -25,6 +25,7 @@ while (stack.length) {
             subs,
         }
         result.push(newNode);
+        break;
     }
 }
 
@@ -61,6 +62,7 @@ function getTheme() {
                 subs,
             }
             theme.push(newNode);
+            return theme;
         }
     }
 
@@ -105,6 +107,9 @@ function getQuestion() {
             }
             questions.push(newNode);
             total++;
+            if (questions.length > 3) {
+                return questions;
+            }
         }
     }
 

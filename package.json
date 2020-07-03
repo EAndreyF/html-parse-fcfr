@@ -6,6 +6,7 @@
     "url": "git+https://github.com/EAndreyF/html-parse-fcfr.git"
   },
   "dependencies": {
-    "jsdom": "^16.2.2"
+    "jsdom": "^16.2.2",
+    "puppeteer": "^4.0.0"
   }
 }
