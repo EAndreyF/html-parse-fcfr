@@ -9,6 +9,19 @@ const result = [];
 let stack = Array.from(body.children).reverse();
 let total = 0;
 
+const NUMBERS = {
+    1: 'I',
+    2: 'II',
+    3: 'III',
+    4: 'IV',
+    5: 'V',
+    6: 'VI',
+    7: 'VII',
+    8: 'VIII',
+    9: 'IX',
+    10: 'X',
+}
+
 while (stack.length) {
     const node = stack.pop();
     if (node.children.length > 0) {
@@ -50,8 +63,8 @@ function getTheme() {
             if (name.indexOf('Код вопроса') !== -1) {
                 const tmp = name.split(' Код вопроса: ');
                 name = tmp[0];
-                const tmpNode = new JSDOM(`<p>Код вопроса: ${tmp[1]}</p>`);
-                stack.push(tmpNode.window.document.body.children[0]);
+                const tmpNode = createElementFromHTML(`<p>Код вопроса: ${tmp[1]}</p>`);
+                stack.push(tmpNode);
             }
 
             const subs = getQuestion()
@@ -90,9 +103,9 @@ function getQuestion() {
 
             if (name.indexOf(' ') !== -1) {
                 const idx = name.indexOf(' ');
-                const tmpNode = new JSDOM(`<p>${name.slice(idx)}</p>`);
+                const tmpNode = createElementFromHTML(`<p>${name.slice(idx)}</p>`);
                 name = name.slice(0, idx);
-                stack.push(tmpNode.window.document.body.children[0]);
+                stack.push(tmpNode);
             }
 
             const text = getText();
@@ -117,8 +130,7 @@ function getQuestion() {
 }
 
 function getText() {
-    const text = [];
-
+    let text = [];
     while (stack.length) {
         const node = stack.pop();
         if (node.children.length > 0) {
@@ -135,8 +147,8 @@ function getText() {
         if (name.indexOf('Ответы:') !== -1) {
             const tmp = name.split('Ответы:');
             name = tmp[0];
-            const tmpNode = new JSDOM(`<p>Ответы: ${tmp[1]}</p>`);
-            stack.push(tmpNode.window.document.body.children[0]);
+            const tmpNode = createElementFromHTML(`<p>Ответы: ${tmp[1]}</p>`);
+            stack.push(tmpNode);
         }
 
         if (name.length === 0) {
@@ -146,12 +158,30 @@ function getText() {
         text.push(name);
     }
 
+    if (text.length === 1) {
+        return text[0];
+    }
+
+    text = text.map((el, i) => {
+        if (i === 0) {
+            return el;
+        }
+
+        return `${NUMBERS[i]}. ${el}`;
+    })
+
     return text.join('\n');
 }
 
 function getCases() {
+    const text = [];
     stack.pop();
     return {};
+}
+
+function createElementFromHTML(htmlString) {
+    const tmpNode = new JSDOM(htmlString);
+    return tmpNode.window.document.body.children[0];
 }
 
 console.log(util.inspect(result, {depth: 5}))
