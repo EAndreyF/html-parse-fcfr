@@ -22,6 +22,15 @@ const NUMBERS = {
     10: 'X',
 }
 
+const LETTERS = {
+    0: 'A',
+    1: 'B',
+    2: 'C',
+    3: 'D',
+    4: 'E',
+    5: 'F',
+}
+
 while (stack.length) {
     const node = stack.pop();
     if (node.children.length > 0) {
@@ -29,7 +38,7 @@ while (stack.length) {
         continue;
     }
 
-    if (node.textContent.indexOf('Глава ') === 0) {
+    if (ihead(node.textContent) === 0) {
         const subs = getTheme()
         const newNode = {
             index: result.length,
@@ -38,7 +47,6 @@ while (stack.length) {
             subs,
         }
         result.push(newNode);
-        break;
     }
 }
 
@@ -52,15 +60,14 @@ function getTheme() {
             continue;
         }
 
-        if (node.textContent.indexOf('Глава ') === 0) {
+        let name = node.textContent.trim();
+        if (ihead(name) === 0) {
             stack.push(node);
             break;
         }
 
-        let name = node.textContent.trim();
-        if (name.indexOf('Тема ') === 0) {
-
-            if (name.indexOf('Код вопроса') !== -1) {
+        if (itheme(name) === 0) {
+            if (iquest(name) !== -1) {
                 const tmp = name.split(' Код вопроса: ');
                 name = tmp[0];
                 const tmpNode = createElementFromHTML(`<p>Код вопроса: ${tmp[1]}</p>`);
@@ -75,7 +82,6 @@ function getTheme() {
                 subs,
             }
             theme.push(newNode);
-            return theme;
         }
     }
 
@@ -92,13 +98,13 @@ function getQuestion() {
             continue;
         }
 
-        if (node.textContent.indexOf('Тема ') === 0) {
+        if (itheme(node.textContent) === 0) {
             stack.push(node);
             break;
         }
 
-        let name = node.textContent;
-        if (name.indexOf('Код вопроса') === 0) {
+        let name = node.textContent.trim();
+        if (iquest(name) === 0) {
             name = name.split('Код вопроса: ')[1];
 
             if (name.indexOf(' ') !== -1) {
@@ -120,9 +126,6 @@ function getQuestion() {
             }
             questions.push(newNode);
             total++;
-            if (questions.length > 3) {
-                return questions;
-            }
         }
     }
 
@@ -138,13 +141,12 @@ function getText() {
             continue;
         }
 
-        let name = node.textContent;
-        if (name.indexOf('Ответы:') === 0) {
-            stack.push(node);
+        let name = node.textContent.trim();
+        if (ianswer(name) === 0) {
             break;
         }
 
-        if (name.indexOf('Ответы:') !== -1) {
+        if (ianswer(name) !== -1) {
             const tmp = name.split('Ответы:');
             name = tmp[0];
             const tmpNode = createElementFromHTML(`<p>Ответы: ${tmp[1]}</p>`);
@@ -174,9 +176,40 @@ function getText() {
 }
 
 function getCases() {
-    const text = [];
-    stack.pop();
-    return {};
+    let cases = [];
+    let answer;
+
+    while (stack.length) {
+        const node = stack.pop();
+        if (node.children.length > 0) {
+            stack = stack.concat(Array.from(node.children).reverse())
+            continue;
+        }
+
+        const text = node.textContent.trim();
+        if (ihead(text) !== -1 || itheme(text) !== -1 || iquest(text) !== -1) {
+            stack.push(node);
+            break;
+        }
+
+        if (text.length === 0) {
+            continue;
+        }
+
+        cases.push(text);
+
+        if (node.tagName === 'H1') {
+            answer = cases.length;
+        }
+    }
+
+    if (!answer) {
+        console.log(cases)
+    }
+
+    cases = cases.map((el, i) => `${LETTERS[i]}. ${el}`)
+
+    return {cases, answer};
 }
 
 function createElementFromHTML(htmlString) {
@@ -184,5 +217,22 @@ function createElementFromHTML(htmlString) {
     return tmpNode.window.document.body.children[0];
 }
 
-console.log(util.inspect(result, {depth: 5}))
+function ihead(str) {
+    return str.indexOf('Глава ');
+}
+
+function itheme(str) {
+    return str.indexOf('Тема ');
+}
+
+function iquest(str) {
+    return str.indexOf('Код вопроса:');
+}
+
+function ianswer(str) {
+    return str.indexOf('Ответы:');
+}
+
+fs.writeFileSync('./answer.json', JSON.stringify(result, null, 4), 'utf8');
+console.log(util.inspect(result, {depth: 8}))
 console.log(total);
